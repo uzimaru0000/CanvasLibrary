@@ -29,7 +29,7 @@ class Display extends EventTarget {
 
         this._fps = 30;
         this.frameCount = 0;
-        this.child = [];
+        this._child = [];
 
         this.__mainLoop = setInterval(this.__draw.bind(this), 1000 / this._fps);
     }
@@ -38,42 +38,80 @@ class Display extends EventTarget {
         return this._fps;
     }
     set fps(value) {
-        clearInterval(this.___mainLoop);
+        clearInterval(this.__mainLoop);
         this._fps = value;
         this.__mainLoop = setInterval(this.__draw.bind(this), 1000 / this._fps);
     }
 
     __draw() {
-        this.child.forEach(x => {
-            x.dispatchEvent('update');
-            this._context.save();
-            this._context.drawImage(x._canvas, x.pos.x, x.pos.y);
-            this._context.restore();
-        });
+        this._context.clearRect(0, 0, this.width, this.height);
         this.dispatchEvent('update');
+        this._child.forEach(x => {
+            x.dispatchEvent('update');
+            x.__draw(this);
+        });
         this.frameCount++;
     }
 
     addChild(child) {
-        this.child.push(child);
+        if (child instanceof Node)
+            this._child.push(child);
     }
     removeChild(child) {
-        var i = this.child.indexOf(child);
+        var i = this._child.indexOf(child);
         this.child.splice(i, 1);
     }
 }
 
 class Node extends EventTarget {
+    constructor() {
+        super();
+        this.pos = new Vector();
+        this._child = [];
+        this.parent;
+    }
+
+    __draw(display){}
+
+    addChild(child) {
+        if (child instanceof Node) {
+            this._child.push(child);
+            child.parent = this;
+        }
+    }
+
+    removeChild(child) {
+        this._child.some((x, index) => {
+            if (x === child) {
+                this._child.splice(index, 1);
+            } 
+        });
+        child.parent = null;
+    }
+}
+
+class Group extends Node {
+    constructor(w, h) {
+        super();
+    }
+
+    __draw(display) {
+        display._context.save();
+        display._context.transform(1, 0, 0, 1, this.pos.x, this.pos.y);
+        this._child.forEach(x => x.__draw(display));
+        display._context.setTransform(1, 0, 1, 0, 0, 0);
+        display._context.restore();
+    }
+}
+
+class Sprite extends Node {
     constructor(w, h) {
         super();
         this._canvas = document.createElement('canvas');
         this._canvas.width = w;
         this._canvas.height = h;
         this._context = this._canvas.getContext('2d');
-
-        this.pos = new Vector();
     }
-
     get width() {
         return this._canvas.width;
     }
@@ -87,9 +125,18 @@ class Node extends EventTarget {
     set height(value) {
         this._canvas.height = value;
     }
+
+    __draw(display) {
+        display._context.save();
+        display._context.transform(1, 0, 0, 1, this.pos.x, this.pos.y);
+        display._context.drawImage(this._canvas, 0, 0);
+        this._child.forEach(x => x.__draw(display));
+        display._context.setTransform(1, 0, 1, 0, 0, 0);
+        display._context.restore();
+    }
 }
 
-class Rect extends Node {
+class Rect extends Sprite {
     constructor(w, h) {
         super(w, h);
         this._context.fillRect(0, 0, this.width, this.height);
