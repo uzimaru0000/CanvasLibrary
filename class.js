@@ -74,6 +74,7 @@ class Node extends EventTarget {
         super();
         this.pos = new Vector();
         this.rotation = 0;
+        this.scale = new Vector(1, 1);
         this._child = [];
         this.parent;
     }
@@ -109,13 +110,9 @@ class Group extends Node {
     __draw(display) {
         this.dispatchEvent('update');
         display._context.save();
-        display._context.transform(
-            Math.cos(this.rotation),
-            Math.sin(this.rotation),
-            -Math.sin(this.rotation),
-            Math.cos(this.rotation),
-            this.pos.x, this.pos.y
-        );
+        display._context.translate(this.pos.x, this.pos.y);
+        display._context.rotate(this.rotation);
+        display._context.scale(this.scale.x, this.scale.y);
         this._child.forEach(x => x.__draw(display));
         display._context.setTransform(1, 0, 1, 0, 0, 0);
         display._context.restore();
@@ -147,14 +144,10 @@ class Sprite extends Node {
     __draw(display) {
         this.dispatchEvent('update');
         display._context.save();
-        display._context.transform(
-            Math.cos(this.rotation),
-            Math.sin(this.rotation),
-            -Math.sin(this.rotation),
-            Math.cos(this.rotation),
-            this.pos.x, this.pos.y
-        );
-        display._context.drawImage(this._canvas, 0, 0);
+        display._context.translate(this.pos.x, this.pos.y);
+        display._context.rotate(this.rotation);
+        display._context.scale(this.scale.x, this.scale.y);
+        display._context.drawImage(this._canvas, -this.width / 2, -this.height / 2);
         this._child.forEach(x => x.__draw(display));
         display._context.setTransform(1, 0, 1, 0, 0, 0);
         display._context.restore();

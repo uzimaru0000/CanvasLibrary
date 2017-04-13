@@ -51,14 +51,25 @@ window.onload = () => {
     display.getPos = (x, y) => {
         return new Vector(1 + (2 + minoSize) * x, 1 + (2 + minoSize) * y);
     };
-    for (var x = 0; x < 10; x++) {
-        for (var y = 0; y < 20; y++) {
-            var m = new Rect(minoSize, minoSize);
-            m.color = stageColor;
-            m.pos = display.getPos(x, y);
-            display.addChild(m);
-        }
-    }
+    // for (var x = 0; x < 10; x++) {
+    //     for (var y = 0; y < 20; y++) {
+    //         var m = new Rect(minoSize, minoSize);
+    //         m.color = stageColor;
+    //         m.pos = display.getPos(x, y);
+    //         display.addChild(m);
+    //     }
+    // }
+    var g = new Group();
+    g.pos = new Vector(320, 320);
+    g.rotation = -Math.PI / 4;
+    var obj = new Rect(100, 100);
+    obj.scale.x = 5;
+    obj.rotation = Math.PI / 4;
+    obj.addEventListener('update', () => {
+        obj.rotate(1);
+    });
+    g.addChild(obj);
+    display.addChild(g);
 
     display.isDrop = true;
     display.dropList = [0, 1, 2, 3, 4, 5, 6];
