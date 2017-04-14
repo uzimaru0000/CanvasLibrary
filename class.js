@@ -17,9 +17,9 @@ class EventTarget {
         });
     }
 
-    dispatchEvent(target) {
+    dispatchEvent(target, e) {
         if (this.__event[target] === undefined) return;
-        this.__event[target].forEach(x => x());
+        this.__event[target].forEach(x => x.call(this, e));
     }
 }
 
@@ -32,8 +32,38 @@ class Display extends EventTarget {
         this._fps = 30;
         this.frameCount = 0;
         this._child = [];
+        this.clearColor = '#fff';
 
         this.__mainLoop = setInterval(this.__draw.bind(this), 1000 / this._fps);
+
+        this.addEventListener('keydown', function(e) {
+            console.log('display : ' + e.key);
+        });
+
+        document.addEventListener('keydown', e => {
+            this.dispatchEvent('keydown', e);
+            this.dispatchEvent(e.key + '-down', e);
+            this._child.forEach(x => {
+                x.dispatchEvent('keydown', e);
+                x.dispatchEvent(e.key + '-down', e);
+            });
+        });
+        document.addEventListener('keyup', e => {
+            this.dispatchEvent('keyup', e);
+            this.dispatchEvent(e.key + '-up', e);
+            this._child.forEach(x => {
+                x.dispatchEvent('keyup', e);
+                x.dispatchEvent(e.key + '-up', e);
+            });
+        });
+        document.addEventListener('keypress', e => {
+            this.dispatchEvent('keypress', e);
+            this.dispatchEvent(e.key + '-press', e);
+            this._child.forEach(x => {
+                x.dispatchEvent('keypress', e);
+                x.dispatchEvent(e.key + '-press', e);
+            });
+        });
     }
 
     get width() {
@@ -53,8 +83,9 @@ class Display extends EventTarget {
     }
 
     __draw() {
-        this._context.clearRect(0, 0, this.width, this.height);
-        this.dispatchEvent('update');
+        this._context.fillStyle = this.clearColor;
+        this._context.fillRect(0, 0, this.width, this.height);
+        this.dispatchEvent('update', this.frameCount);
         this._child.forEach(x => x.__draw(this));
         this.frameCount++;
     }
@@ -79,7 +110,9 @@ class Node extends EventTarget {
         this.parent;
     }
 
-    __draw(display){}
+    __draw(display) {
+        this.dispatchEvent('update', display.frameCount);
+    }
 
     addChild(child) {
         if (child instanceof Node) {
@@ -100,6 +133,11 @@ class Node extends EventTarget {
     rotate(deg) {
         this.rotation += deg * Math.PI / 180;
     }
+
+    dispatchEvent(target, e) {
+        super.dispatchEvent(target, e);
+        this._child.forEach(x => x.dispatchEvent(target, e));
+    }
 }
 
 class Group extends Node {
@@ -108,7 +146,7 @@ class Group extends Node {
     }
 
     __draw(display) {
-        this.dispatchEvent('update');
+        super.__draw(display);
         display._context.save();
         display._context.translate(this.pos.x, this.pos.y);
         display._context.rotate(this.rotation);
@@ -142,7 +180,7 @@ class Sprite extends Node {
     }
 
     __draw(display) {
-        this.dispatchEvent('update');
+        super.__draw(display);
         display._context.save();
         display._context.translate(this.pos.x, this.pos.y);
         display._context.rotate(this.rotation);
