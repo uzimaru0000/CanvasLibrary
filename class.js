@@ -36,10 +36,6 @@ class Display extends EventTarget {
 
         this.__mainLoop = setInterval(this.__draw.bind(this), 1000 / this._fps);
 
-        this.addEventListener('keydown', function(e) {
-            console.log('display : ' + e.key);
-        });
-
         document.addEventListener('keydown', e => {
             this.dispatchEvent('keydown', e);
             this.dispatchEvent(e.key + '-down', e);
@@ -91,12 +87,15 @@ class Display extends EventTarget {
     }
 
     addChild(child) {
-        if (child instanceof Node)
+        if (child instanceof Node) {
             this._child.push(child);
+            child.parent = this;
+        }
     }
     removeChild(child) {
         var i = this._child.indexOf(child);
-        this.child.splice(i, 1);
+        this._child.splice(i, 1);
+        child.parent = null;
     }
 }
 
