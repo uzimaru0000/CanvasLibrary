@@ -222,13 +222,114 @@ class Rect extends Sprite {
 
 }
 
+class Circle extends Sprite {
+    constructor(r) {
+        super(2 * r, 2 * r);
+        this._context.arc(r, r, r, 0, 2 * Math.PI, false);
+        this._context.fill();
+    }
+
+    get radius() {
+        return this.width / 2;
+    }
+    set radius(value) {
+        this._canvas.width = value * 2;
+        this._canvas.height = value * 2;
+        this._context.clearRect(0, 0, 2 * this.radius, 2 * this.radius);
+        this._context.arc(r, r, r, 0, 2 * Math.PI, false);
+        this._context.fill();
+    }
+    get color() {
+        return this._context.fillStyle;
+    }
+    set color(value) {
+        this._context.fillStyle = value;
+        this._context.clearRect(0, 0, 2 * this.radius, 2 * this.radius);
+        this._context.arc(this.radius, this.radius, this.radius, 0, 2 * Math.PI, false);
+        this._context.fill();
+    }
+}
+
+// util class
 class Vector {
     constructor(x, y) {
-        this.x = x | 0;
-        this.y = y | 0;
+        this.x = x || 0;
+        this.y = y || 0;
     }
 
     get length() {
         return Math.sqrt(Math.pow(this.x, 2) + Math.pow(this.y, 2));
+    }
+    get normalized() {
+        return this.mul(this.length);
+    }
+
+    add(v) {
+        this.x += v.x;
+        this.y += v.y;
+        return this;
+    }
+    sub(v) {
+        this.x -= v.x;
+        this.y -= v.y;
+        return this;
+    }
+    mul(s) {
+        this.x *= s;
+        this.y *= s;
+        return this;
+    }
+    div(s) {
+        this.x /= s;
+        this.y /= s;
+        return this;
+    }
+
+    toString() {
+        return "Vector [" + this.x + ", " + this.y + "]";
+    }
+
+    static dot(v) {
+        return this.x * v.x + this.y * v.y;
+    }
+    static get up() { return new Vector(0, 1); }
+    static get down() { return new Vector(0, -1); }
+    static get left() { return new Vector(-1, 0); }
+    static get right() { return new Vector(1, 0); }
+    static get one() { return new Vector(1, 1); }
+    static get zero() { return new Vector(0, 0); }
+}
+
+class Color {
+    constructor(r, g, b, a) {
+        this.r = r || 0;
+        this.g = g || 0;
+        this.b = b || 0;
+        this.a = a || 1;
+    }
+
+    toString() {
+        return 'rgba(' + this.r + ',' + this.g + ',' + this.b + ',' + this.a + ')';
+    }
+
+    static random(a) {
+        a = a || 1;
+        return new Color(
+            Random.range(0, 255, true),
+            Random.range(0, 255, true),
+            Random.range(0, 255, true),
+            a);
+    }
+}
+
+class Random {
+    static range(min, max, flag) {
+        var r = ((max - min) * Math.random()) + min;
+        return flag ? parseInt(r) : r;
+    }
+    static get vector() {
+        var x = Random.range(-1, 1);
+        var y= Random.range(-1, 1);
+        return new Vector(x, y).normalized;
     }
 }
