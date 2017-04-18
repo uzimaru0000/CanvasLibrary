@@ -32,6 +32,7 @@ class Display extends EventTarget {
         this._fps = 30;
         this.frameCount = 0;
         this._child = [];
+        this._textures = {};
         this.clearColor = '#fff';
 
         this.__mainLoop = setInterval(this.__draw.bind(this), 1000 / this._fps);
@@ -97,6 +98,14 @@ class Display extends EventTarget {
         this._child.splice(i, 1);
         child.parent = null;
     }
+
+    preload(paths) {
+        let c = 0;
+        paths.forEach(x => {
+            this._textures[x] = new Texture(x);
+            this._textures[x].onload = () => { if (++c === paths.length) this.dispatchEvent('init') };
+        });
+    }
 }
 
 class Node extends EventTarget {
@@ -156,7 +165,7 @@ class Group extends Node {
     }
 }
 
-class Sprite extends Node {
+class Drowable extends Node {
     constructor(w, h) {
         super();
         this._canvas = document.createElement('canvas');
@@ -191,7 +200,7 @@ class Sprite extends Node {
     }
 }
 
-class Rect extends Sprite {
+class Rect extends Drowable {
     constructor(w, h) {
         super(w, h);
         this._context.fillRect(0, 0, this.width, this.height);
@@ -222,7 +231,7 @@ class Rect extends Sprite {
 
 }
 
-class Circle extends Sprite {
+class Circle extends Drowable {
     constructor(r) {
         super(2 * r, 2 * r);
         this._context.arc(r, r, r, 0, 2 * Math.PI, false);
@@ -247,6 +256,13 @@ class Circle extends Sprite {
         this._context.clearRect(0, 0, 2 * this.radius, 2 * this.radius);
         this._context.arc(this.radius, this.radius, this.radius, 0, 2 * Math.PI, false);
         this._context.fill();
+    }
+}
+
+class Sprite extends Drowable {
+    constructor(w, h, tex) {
+        super(w, h);
+        this._context.drawImage(tex.image, 0, 0, w, h);
     }
 }
 
@@ -331,5 +347,12 @@ class Random {
         var x = Random.range(-1, 1);
         var y= Random.range(-1, 1);
         return new Vector(x, y).normalized;
+    }
+}
+
+class Texture {
+    constructor(path, w, h) {
+        this.image = new Image(w, h);
+        this.image.src = path;
     }
 }
