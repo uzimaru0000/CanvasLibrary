@@ -80,6 +80,8 @@ class Display extends EventTarget {
     }
 
     __draw() {
+        if (!Object.values(this._textures).every(x => x.image.getAttribute('loaded'))) return;
+        if (this.frameCount === 0) this.dispatchEvent('init');
         this._context.fillStyle = this.clearColor;
         this._context.fillRect(0, 0, this.width, this.height);
         this.dispatchEvent('update', this.frameCount);
@@ -103,8 +105,12 @@ class Display extends EventTarget {
         let c = 0;
         paths.forEach(x => {
             this._textures[x] = new Texture(x);
-            this._textures[x].onload = () => { if (++c === paths.length) this.dispatchEvent('init') };
+            this._textures[x].image.onload = e => this._textures[x].image.setAttribute('loaded', 'true');
         });
+    }
+
+    getTexture(path) {
+        return this._textures[path];
     }
 }
 
