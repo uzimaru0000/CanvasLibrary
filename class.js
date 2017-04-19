@@ -37,30 +37,15 @@ class Display extends EventTarget {
 
         this.__mainLoop = setInterval(this.__draw.bind(this), 1000 / this._fps);
 
-        document.addEventListener('keydown', e => {
-            this.dispatchEvent('keydown', e);
-            this.dispatchEvent(e.key + '-down', e);
-            this._child.forEach(x => {
-                x.dispatchEvent('keydown', e);
-                x.dispatchEvent(e.key + '-down', e);
-            });
-        });
-        document.addEventListener('keyup', e => {
-            this.dispatchEvent('keyup', e);
-            this.dispatchEvent(e.key + '-up', e);
-            this._child.forEach(x => {
-                x.dispatchEvent('keyup', e);
-                x.dispatchEvent(e.key + '-up', e);
-            });
-        });
-        document.addEventListener('keypress', e => {
-            this.dispatchEvent('keypress', e);
-            this.dispatchEvent(e.key + '-press', e);
-            this._child.forEach(x => {
-                x.dispatchEvent('keypress', e);
-                x.dispatchEvent(e.key + '-press', e);
-            });
-        });
+        // キーイベント
+        document.addEventListener('keydown', e => this.__keyEvent('down', e));
+        document.addEventListener('keyup', e => this.__keyEvent('up', e));
+        document.addEventListener('keypress', e => this.__keyEvent('press', e));
+        // マウスイベント
+        this._canvas.addEventListener('mousedown', e => this.__mouseEvent(e));
+        this._canvas.addEventListener('mouseup', e => this.__mouseEvent(e));
+        this._canvas.addEventListener('mousemove', e => this.__mouseEvent(e));
+        this._canvas.addEventListener('mouseout', e => this.__mouseEvent(e));
     }
 
     get width() {
@@ -87,6 +72,20 @@ class Display extends EventTarget {
         this.dispatchEvent('update', this.frameCount);
         this._child.forEach(x => x.__draw(this));
         this.frameCount++;
+    }
+
+    __keyEvent(eventType, eventData) {
+        this.dispatchEvent(eventData.type, eventData);
+        this.dispatchEvent(eventData.key + '-' + eventType, eventData);
+        this._child.forEach(x => {
+            x.dispatchEvent(eventData.type, eventData);
+            x.dispatchEvent(eventData.key + '-' + eventType, eventData);
+        });
+    }
+
+    __mouseEvent(eventData) {
+        this.dispatchEvent(eventData.type, eventData);
+        this._child.forEach(x => x.dispatchEvent(eventData.type, eventData));
     }
 
     addChild(child) {
@@ -203,6 +202,18 @@ class Drowable extends Node {
         this._child.forEach(x => x.__draw(display));
         display._context.setTransform(1, 0, 1, 0, 0, 0);
         display._context.restore();
+    }
+    dispatchEvent(target, e) {
+        if (e instanceof MouseEvent) {
+            if (this.pos.x - this.width / 2 <= e.offsetX &&
+                    this.pos.x + this.width / 2 >= e.offsetX &&
+                    this.pos.y - this.height / 2 <= e.offsetY &&
+                    this.pos.y + this.height / 2 >= e.offsetY) {
+                        super.dispatchEvent(target, e);
+            }
+        } else {
+            super.dispatchEvent(target, e);
+        }
     }
 }
 
