@@ -11,7 +11,7 @@ window.onload = () => {
         var s = new Sprite(100, 100, this.getTexture('./Images/hog.jpg'));
         s.pos = new Vector(s.width / 2, s.height / 2);
         s.addEventListener('mousemove', function(e) {
-            if (e.buttons === 1) this.pos = new Vector(e.offsetX, e.offsetY);
+            if (e.clicked) this.pos = e.localPos;
         });
         g.addChild(s);
         this.addChild(g);

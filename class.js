@@ -42,10 +42,10 @@ class Display extends EventTarget {
         document.addEventListener('keyup', e => this.__keyEvent('up', e));
         document.addEventListener('keypress', e => this.__keyEvent('press', e));
         // マウスイベント
-        this._canvas.addEventListener('mousedown', e => this.__mouseEvent(e));
-        this._canvas.addEventListener('mouseup', e => this.__mouseEvent(e));
-        this._canvas.addEventListener('mousemove', e => this.__mouseEvent(e));
-        this._canvas.addEventListener('mouseout', e => this.__mouseEvent(e));
+        this._canvas.addEventListener('mousedown', e => this.__mouseEvent(new MouseEvent(e)));
+        this._canvas.addEventListener('mouseup', e => this.__mouseEvent(new MouseEvent(e)));
+        this._canvas.addEventListener('mousemove', e => this.__mouseEvent(new MouseEvent(e)));
+        this._canvas.addEventListener('mouseout', e => this.__mouseEvent(new MouseEvent(e)));
     }
 
     get width() {
@@ -102,10 +102,7 @@ class Display extends EventTarget {
 
     preload(paths) {
         let c = 0;
-        paths.forEach(x => {
-            this._textures[x] = new Texture(x);
-            this._textures[x].image.onload = e => this._textures[x].image.setAttribute('loaded', 'true');
-        });
+        paths.forEach(x => this._textures[x] = new Texture(x));
     }
 
     getTexture(path) {
@@ -205,11 +202,11 @@ class Drowable extends Node {
     }
     dispatchEvent(target, e) {
         if (e instanceof MouseEvent) {
-            if (this.pos.x - this.width / 2 <= e.offsetX &&
-                    this.pos.x + this.width / 2 >= e.offsetX &&
-                    this.pos.y - this.height / 2 <= e.offsetY &&
-                    this.pos.y + this.height / 2 >= e.offsetY) {
-                        super.dispatchEvent(target, e);
+            if (this.pos.x - this.width / 2 <= e.localPos.x &&
+                this.pos.x + this.width / 2 >= e.localPos.x &&
+                this.pos.y - this.height / 2 <= e.localPos.y &&
+                this.pos.y + this.height / 2 >= e.localPos.y) {            
+                    super.dispatchEvent(target, e);
             }
         } else {
             super.dispatchEvent(target, e);
@@ -280,6 +277,21 @@ class Sprite extends Drowable {
     constructor(w, h, tex) {
         super(w, h);
         this._context.drawImage(tex.image, 0, 0, w, h);
+    }
+}
+
+class Event {
+    constructor() {
+
+    }
+}
+
+class MouseEvent {
+    constructor(e) {
+        this.type = e.type;
+        this.globalPos = new Vector(e.offsetX, e.offsetY);
+        this.localPos = new Vector(e.offsetX, e.offsetY);
+        this.clicked = (e.buttons === 1);
     }
 }
 
@@ -371,5 +383,10 @@ class Texture {
     constructor(path, w, h) {
         this.image = new Image(w, h);
         this.image.src = path;
+        this.image.onload = () => this.image.setAttribute('loaded', 'true');
+    }
+
+    get loaded() {
+        return this.image.getAttribute('loaded');
     }
 }
