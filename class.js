@@ -17,6 +17,10 @@ class EventTarget {
         });
     }
 
+    on(target, func) {
+        this.addEventListener(target, func);
+    }
+
     dispatchEvent(target, e) {
         if (this.__event[target] === undefined) return;
         this.__event[target].forEach(x => x.call(this, e));
@@ -276,7 +280,12 @@ class Circle extends Drowable {
 class Sprite extends Drowable {
     constructor(w, h, tex) {
         super(w, h);
-        this._context.drawImage(tex.image, 0, 0, w, h);
+        this.texture = tex;
+    }
+
+    __draw(display) {
+        this._context.drawImage(this.texture.image, 0, 0, this.width, this.height);
+        super.__draw(display);
     }
 }
 
