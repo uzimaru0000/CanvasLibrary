@@ -39,6 +39,12 @@ class Display extends EventTarget {
         this._textures = {};
         this.clearColor = '#fff';
 
+        // gridの設定
+        this.isGrid = false;
+        this.gridSpace = 20;
+        this.gridWidth = 1;
+        this.gridColor = "#0fa";
+
         this.__mainLoop = setInterval(this.__draw.bind(this), 1000 / this._fps);
 
         // キーイベント
@@ -73,6 +79,30 @@ class Display extends EventTarget {
         if (this.frameCount === 0) this.dispatchEvent('init');
         this._context.fillStyle = this.clearColor;
         this._context.fillRect(0, 0, this.width, this.height);
+        if (this.isGrid) {
+            var w = this.width / this.gridSpace;
+            var h = this.height / this.gridSpace;
+            this._context.strokeStyle = this.gridColor;
+            this._context.lineWidth = this.gridWidth;
+            for (var x = 0; x <= w; x++) {
+                this._context.beginPath();
+                this._context.save();
+                if (x % 5 == 0) this._context.lineWidth *= 2;
+                this._context.lineTo(x * this.gridSpace, 0);
+                this._context.lineTo(x * this.gridSpace, this.height);
+                this._context.stroke();
+                this._context.restore();
+            }
+            for (var y = 0; y <= h; y++) {
+                this._context.beginPath();
+                this._context.save();
+                if (y % 5 == 0) this._context.lineWidth *= 2;
+                this._context.lineTo(0, y * this.gridSpace);
+                this._context.lineTo(this.width, y * this.gridSpace);
+                this._context.stroke();
+                this._context.restore();
+            }
+        }
         this.dispatchEvent('update', this.frameCount);
         this._child.forEach(x => x.__draw(this));
         this.frameCount++;
