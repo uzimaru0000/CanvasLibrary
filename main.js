@@ -5,21 +5,17 @@ let APP = {};
 window.onload = () => {
     APP.display = new Display('canvas');
     APP.display.preload(['./Images/hog.jpg']);
+    let textures = [];
+    for (var i = 0; i < 10; i++) {
+        let r = new Rect(1, 1);
+        r.color = Color.random().toString();
+        textures[i] = new Texture();
+        textures[i].image = r._canvas;
+    }
     APP.display.on('init', function() {
-        var g = new Group();
-        g.pos = new Vector(this.width / 2, this.height / 2);
-        var s = new Rect(200, 200);
-        s.color = Color.random().toString();
-        s.on('mousemove', function(e) {
-            if(e.clicked) this.pos = e.localPos.clone();
-        });
-        var s1 = new Rect(100, 100);
-        s1.color = Color.random(0.5).toString();
-        s1.on('mousemove', function(e) {
-            if(e.clicked) this.pos = e.localPos.clone();
-        });
-        g.addChild(s);
-        g.addChild(s1);
-        this.addChild(g);
+        let a = new AnimationSprite(200, 200);
+        a.textures = textures;
+        a.rate = 1;
+        this.addChild(a);
     });
 }

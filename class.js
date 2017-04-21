@@ -328,6 +328,28 @@ class Sprite extends Drowable {
     }
 }
 
+// アニメーションするスプライトクラス
+class AnimationSprite extends Drowable {
+    constructor(w, h, texs) {
+        super(w, h);
+        this.frame = 0;
+        this.textures = texs;
+        this.rate = 30;
+        this.on('update', e => {
+            if (e % this.rate === 0) {
+                this.frame++;
+                this.frame %= this.textures.length;
+            }
+        });
+    }
+
+    __draw(display) {
+        this._context.drawImage(this.textures[this.frame].image, 0, 0, this.width, this.height);
+        super.__draw(display);
+    }
+}
+
+// イベントクラス
 class Event {
     constructor(e) {
         this.type = e.type;
