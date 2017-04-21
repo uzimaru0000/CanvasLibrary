@@ -178,10 +178,6 @@ class Node extends EventTarget {
         this.rotation += deg * Math.PI / 180;
     }
 
-    dispatchEvent(target, e) {
-        super.dispatchEvent(target, e);
-        this._child.forEach(x => x.dispatchEvent(target, e));
-    }
 }
 
 class Group extends Node {
@@ -199,8 +195,15 @@ class Group extends Node {
         display._context.setTransform(1, 0, 1, 0, 0, 0);
         display._context.restore();
     }
+
+    dispatchEvent(target, e) {
+        super.dispatchEvent(target, e);
+        if (/mouse*/.test(e.type)) e.localPos.sub(this.pos);
+        this._child.forEach(x => x.dispatchEvent(target, e));
+    }
 }
 
+// 描画領域を持つNodeクラス
 class Drowable extends Node {
     constructor(w, h) {
         super();
@@ -234,20 +237,24 @@ class Drowable extends Node {
         display._context.setTransform(1, 0, 1, 0, 0, 0);
         display._context.restore();
     }
+
     dispatchEvent(target, e) {
-        if (e instanceof MouseEvent) {
+        if (/mouse*/.test(e.type)) {
             if (this.pos.x - this.width / 2 <= e.localPos.x &&
                 this.pos.x + this.width / 2 >= e.localPos.x &&
                 this.pos.y - this.height / 2 <= e.localPos.y &&
-                this.pos.y + this.height / 2 >= e.localPos.y) {            
-                    super.dispatchEvent(target, e);
+                this.pos.y + this.height / 2 >= e.localPos.y) {
+                super.dispatchEvent(target, e);
+                e.localPos.sub(this.pos);
             }
         } else {
             super.dispatchEvent(target, e);
         }
+        this._child.forEach(x => x.dispatchEvent(target, cp));
     }
 }
 
+// 矩形スプライトクラス
 class Rect extends Drowable {
     constructor(w, h) {
         super(w, h);
@@ -279,6 +286,7 @@ class Rect extends Drowable {
 
 }
 
+// 円形スプライトクラス
 class Circle extends Drowable {
     constructor(r) {
         super(2 * r, 2 * r);
@@ -307,6 +315,7 @@ class Circle extends Drowable {
     }
 }
 
+// 画像スプライトクラス
 class Sprite extends Drowable {
     constructor(w, h, tex) {
         super(w, h);
@@ -320,14 +329,18 @@ class Sprite extends Drowable {
 }
 
 class Event {
-    constructor() {
+    constructor(e) {
+        this.type = e.type;
+    }
 
+    clone() {
+        return Object.assign({}, this);
     }
 }
 
-class MouseEvent {
+class MouseEvent extends Event {
     constructor(e) {
-        this.type = e.type;
+        super(e);
         this.globalPos = new Vector(e.offsetX, e.offsetY);
         this.localPos = new Vector(e.offsetX, e.offsetY);
         this.clicked = (e.buttons === 1);
@@ -371,6 +384,10 @@ class Vector {
 
     toString() {
         return "Vector [" + this.x + ", " + this.y + "]";
+    }
+
+    clone() {
+        return new Vector(this.x, this.y);
     }
 
     static dot(v) {
