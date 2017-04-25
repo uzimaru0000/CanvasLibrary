@@ -154,6 +154,11 @@ class Node extends EventTarget {
         this.parent;
     }
 
+    get globalPos() {
+        if (this.parent instanceof Display) return this.pos.clone();
+        return this.pos.clone().add(this.parent.globalPos);
+    }
+
     __draw(display) {
         this.dispatchEvent('update', display.frameCount);
     }
@@ -250,7 +255,15 @@ class Drowable extends Node {
         } else {
             super.dispatchEvent(target, e);
         }
-        this._child.forEach(x => x.dispatchEvent(target, cp));
+        this._child.forEach(x => x.dispatchEvent(target, e));
+    }
+
+    isHit(target) {
+
+    }
+
+    withIn(target, radius) {
+        return target instanceof Drowable && target.globalPos.sub(this.globalPos).length <= radius;
     }
 }
 
@@ -386,22 +399,22 @@ class Vector {
     add(v) {
         this.x += v.x;
         this.y += v.y;
-        return this;
+        return this.clone();
     }
     sub(v) {
         this.x -= v.x;
         this.y -= v.y;
-        return this;
+        return this.clone();
     }
     mul(s) {
         this.x *= s;
         this.y *= s;
-        return this;
+        return this.clone();
     }
     div(s) {
         this.x /= s;
         this.y /= s;
-        return this;
+        return this.clone();
     }
 
     toString() {
