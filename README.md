@@ -1,3 +1,2 @@
-# Tetris
-
-Tetris with canvasAPI
+# CanvasLibrary
+## CanvasAPIをいい感じに使いやすくした（つもり）のライブラリ
