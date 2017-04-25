@@ -6,6 +6,7 @@ window.onload = () => {
     APP.display = new Display('canvas');
     APP.display.on('init', function() {
         let a = new Rect(100, 100);
+        a.z_index = 1;
         a.color = Color.random().toString();
         a.pos = new Vector(100, 100);
         a.on('update', function(e) {

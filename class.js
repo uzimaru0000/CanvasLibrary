@@ -86,6 +86,8 @@ class Display extends EventTarget {
         this.__clear();
         if (this.isGrid) this.__drawGrid();
         this.dispatchEvent('update', this.frameCount);
+        // let childCopy = this._child.clone();
+        this._child.sort((x, y) => x.z_index > y.z_index);
         this._child.forEach(x => x.__draw(this));
         this.frameCount++;
     }
@@ -181,6 +183,7 @@ class Node extends EventTarget {
 
     __draw(display) {
         this.dispatchEvent('update', display.frameCount);
+        this._child.sort((x, y) => x.z_index > y.z_index);
     }
 
     addChild(child) {
