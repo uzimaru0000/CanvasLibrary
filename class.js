@@ -171,6 +171,7 @@ class Node extends EventTarget {
         this.scale = new Vector(1, 1);
         this._child = [];
         this.parent;
+        this.z_index = 0;
     }
 
     get globalPos() {
