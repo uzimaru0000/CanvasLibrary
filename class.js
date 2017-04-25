@@ -38,6 +38,7 @@ class Display extends EventTarget {
         this._child = [];
         this._textures = {};
         this.clearColor = '#fff';
+        this.clearMode = Display.clearMode.Normal;
 
         // gridの設定
         this.isGrid = false;
@@ -56,6 +57,11 @@ class Display extends EventTarget {
         this._canvas.addEventListener('mouseup', e => this.__mouseEvent(new MouseEvent(e)));
         this._canvas.addEventListener('mousemove', e => this.__mouseEvent(new MouseEvent(e)));
         this._canvas.addEventListener('mouseout', e => this.__mouseEvent(new MouseEvent(e)));
+
+        Display.clearMode = {
+            Normal: 0,
+            UseColor: 1
+        };
     }
 
     get width() {
@@ -77,8 +83,7 @@ class Display extends EventTarget {
     __draw() {
         if (!Object.values(this._textures).every(x => x.image.getAttribute('loaded'))) return;
         if (this.frameCount === 0) this.dispatchEvent('init');
-        this._context.fillStyle = this.clearColor;
-        this._context.fillRect(0, 0, this.width, this.height);
+        this.__clear();
         if (this.isGrid) this.__drawGrid();
         this.dispatchEvent('update', this.frameCount);
         this._child.forEach(x => x.__draw(this));
@@ -116,6 +121,18 @@ class Display extends EventTarget {
             this._context.lineTo(this.width, y * this.gridSpace);
             this._context.stroke();
             this._context.restore();
+        }
+    }
+
+    __clear() {
+        switch (this.clearMode) {
+            case Display.clearMode.Normal:
+                this._context.clearRect(0, 0, this.width, this.height);
+                break;
+            case Display.clearMode.UseColor:
+                this._context.fillStyle = this.clearColor;
+                this._context.fillRect(0, 0, this.width, this.height);
+                break;
         }
     }
 
