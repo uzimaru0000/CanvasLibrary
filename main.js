@@ -10,18 +10,18 @@ window.onload = () => {
         a.pos = new Vector(100, 100);
         a.on('update', function(e) {
             // this.rotate(10);
-            this.scale = Vector.one.mul(Math.sin(e / 10));
+            // this.scale = Vector.one.mul(Math.sin(e / 10));
         });
         a.on('mousemove', function(e) {
             if (e.clicked) this.pos = e.localPos.clone();
+            this.withIn(b, 50, () => {
+                this.color = Color.random().toString();
+            });
         });
         this.addChild(a);
         let b = new Circle(50);
         b.color = Color.random().toString();
         b.pos = new Vector(300, 300);
-        b.on('update', function() {
-            console.log(this.withIn(a, this.radius));
-        });
         this.addChild(b);
     });
 }

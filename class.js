@@ -283,8 +283,13 @@ class Drowable extends Node {
 
     }
 
-    withIn(target, radius1, radius2) {
-        return target instanceof Drowable && target.globalPos.sub(this.globalPos).length <= 2 * radius;
+    withIn(target, radius, callback) {
+        if (target instanceof Drowable && target.globalPos.sub(this.globalPos).length <= 2 * radius) {
+            callback();
+            return true;
+        } else {
+            return false;
+        }
     }
 }
 
