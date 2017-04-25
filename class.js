@@ -29,6 +29,11 @@ class EventTarget {
 
 class Display extends EventTarget {
     constructor(id) {
+        Display.clearMode = {
+            Normal: 0,
+            UseColor: 1
+        };
+
         super();
         this._canvas = document.getElementById(id);
         this._context = this._canvas.getContext('2d');
@@ -57,11 +62,6 @@ class Display extends EventTarget {
         this._canvas.addEventListener('mouseup', e => this.__mouseEvent(new MouseEvent(e)));
         this._canvas.addEventListener('mousemove', e => this.__mouseEvent(new MouseEvent(e)));
         this._canvas.addEventListener('mouseout', e => this.__mouseEvent(new MouseEvent(e)));
-
-        Display.clearMode = {
-            Normal: 0,
-            UseColor: 1
-        };
     }
 
     get width() {
@@ -264,10 +264,12 @@ class Drowable extends Node {
 
     dispatchEvent(target, e) {
         if (/mouse*/.test(e.type)) {
-            if (this.pos.x - this.width / 2 <= e.localPos.x &&
-                this.pos.x + this.width / 2 >= e.localPos.x &&
-                this.pos.y - this.height / 2 <= e.localPos.y &&
-                this.pos.y + this.height / 2 >= e.localPos.y) {
+            let width = this.width * Math.abs(this.scale.x);
+            let height = this.height * Math.abs(this.scale.y);
+            if (this.pos.x - width / 2 <= e.localPos.x &&
+                this.pos.x + width / 2 >= e.localPos.x &&
+                this.pos.y - height / 2 <= e.localPos.y &&
+                this.pos.y + height / 2 >= e.localPos.y) {
                 super.dispatchEvent(target, e);
                 e.localPos.sub(this.pos);
             }
@@ -281,8 +283,8 @@ class Drowable extends Node {
 
     }
 
-    withIn(target, radius) {
-        return target instanceof Drowable && target.globalPos.sub(this.globalPos).length <= radius;
+    withIn(target, radius1, radius2) {
+        return target instanceof Drowable && target.globalPos.sub(this.globalPos).length <= 2 * radius;
     }
 }
 
@@ -294,14 +296,14 @@ class Rect extends Drowable {
     }
 
     get width() {
-        return this._canvas.width;
+        return super.width;
     }
     set width(value) {
         this._canvas.width = value;
         this._context.fillRect(0, 0, this.width, this.height);
     }
     get height() {
-        return this._canvas.height;
+        return super.height;
     }
     set height(value) {
         this._canvas.height = value;
@@ -418,22 +420,22 @@ class Vector {
     add(v) {
         this.x += v.x;
         this.y += v.y;
-        return this.clone();
+        return this;
     }
     sub(v) {
         this.x -= v.x;
         this.y -= v.y;
-        return this.clone();
+        return this;
     }
     mul(s) {
         this.x *= s;
         this.y *= s;
-        return this.clone();
+        return this;
     }
     div(s) {
         this.x /= s;
         this.y /= s;
-        return this.clone();
+        return this;
     }
 
     toString() {
