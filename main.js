@@ -10,8 +10,8 @@ window.onload = () => {
         a.color = Color.random().toString();
         a.pos = new Vector(100, 100);
         a.on('update', function(e) {
-            // this.rotate(10);
-            // this.scale = Vector.one.mul(Math.sin(e / 10));
+            this.rotate(10);
+            this.scale = Vector.one.mul(Math.sin(e / 10));
         });
         a.on('mousemove', function(e) {
             if (e.clicked) this.pos = e.localPos.clone();
