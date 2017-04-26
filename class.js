@@ -497,9 +497,10 @@ class Vector {
         return new Vector(this.x, this.y);
     }
 
-    static dot(v) {
+    dot(v) {
         return this.x * v.x + this.y * v.y;
     }
+    
     static get up() { return new Vector(0, 1); }
     static get down() { return new Vector(0, -1); }
     static get left() { return new Vector(-1, 0); }
