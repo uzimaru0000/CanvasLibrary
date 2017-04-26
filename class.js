@@ -44,6 +44,7 @@ class Display extends EventTarget {
         this._textures = {};
         this.clearColor = '#fff';
         this.clearMode = Display.clearMode.Normal;
+        this.isDebug = false;
 
         // gridの設定
         this.isGrid = false;
@@ -260,6 +261,10 @@ class Drowable extends Node {
         display._context.translate(this.pos.x, this.pos.y);
         display._context.rotate(this.rotation);
         display._context.scale(this.scale.x, this.scale.y);
+        if (display.isDebug) {
+            this._context.strokeStyle = 'red';
+            this._context.strokeRect(0, 0, this.width, this.height);
+        }
         display._context.drawImage(this._canvas, -this.width / 2, -this.height / 2);
         this._child.forEach(x => x.__draw(display));
         display._context.setTransform(1, 0, 1, 0, 0, 0);
