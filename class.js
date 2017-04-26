@@ -426,9 +426,10 @@ class Label extends Drowable {
 
     __draw(display) {
         this._context.clearRect(0, 0, this.width, this.height);
+        this._context.textBaseline = 'middle';
         this._context.font = this.fontSize + "px ''";
         this._context.fillStyle = this.color;
-        this._context.fillText(this.text, 0, this.fontSize);
+        this._context.fillText(this.text, 0, this.fontSize / 2);
         super.__draw(display);
     }
 }
