@@ -392,6 +392,42 @@ class AnimationSprite extends Drowable {
     }
 }
 
+// 文字を描画するスプライトクラス
+class Label extends Drowable {
+    constructor(str) {
+        super(100, 16);
+        this._context.font = this.fontSize + "px ''";
+        this.width = this._context.measureText(str).width;
+        
+        this._text = str;
+        this.color = 'black';
+    }
+
+    get fontSize() {
+        return this.height;
+    }
+    set fontSize(value) {
+        this.height = value;
+        this._context.font = value + "px ''";
+        this.width = this._context.measureText(this.text).width;
+    }
+    get text() {
+        return this._text;
+    }
+    set text(value) {
+        this._text = value;
+        this.width = this._context.measureText(value).width;
+    }
+
+    __draw(display) {
+        this._context.clearRect(0, 0, this.width, this.height);
+        this._context.font = this.fontSize + "px ''";
+        this._context.fillStyle = this.color;
+        this._context.fillText(this.text, 0, this.fontSize);
+        super.__draw(display);
+    }
+}
+
 // イベントクラス
 class Event {
     constructor(e) {
