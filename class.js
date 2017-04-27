@@ -87,7 +87,6 @@ class Display extends EventTarget {
         this.__clear();
         if (this.isGrid) this.__drawGrid();
         this.dispatchEvent('update', this.frameCount);
-        // let childCopy = this._child.clone();
         this._child.sort((x, y) => x.z_index > y.z_index);
         this._child.forEach(x => x.__draw(this));
         this.frameCount++;
@@ -141,7 +140,8 @@ class Display extends EventTarget {
 
     __mouseEvent(eventData) {
         this.dispatchEvent(eventData.type, eventData);
-        this._child.forEach(x => x.dispatchEvent(eventData.type, eventData));
+        this._child.sort((x, y) => x.z_index < y.z_index);
+        this._child.some(x => x.dispatchEvent(eventData.type, eventData));
     }
 
     addChild(child) {
@@ -228,7 +228,7 @@ class Group extends Node {
     dispatchEvent(target, e) {
         super.dispatchEvent(target, e);
         if (/mouse*/.test(e.type)) e.localPos.sub(this.pos);
-        this._child.forEach(x => x.dispatchEvent(target, e));
+        return this._child.some(x => x.dispatchEvent(target, e));
     }
 }
 
@@ -280,12 +280,12 @@ class Drowable extends Node {
                 this.pos.y - height / 2 <= e.localPos.y &&
                 this.pos.y + height / 2 >= e.localPos.y) {
                 super.dispatchEvent(target, e);
-                e.localPos.sub(this.pos);
+                return true;
             }
         } else {
             super.dispatchEvent(target, e);
         }
-        this._child.forEach(x => x.dispatchEvent(target, e));
+        return this._child.some(x => x.dispatchEvent(target, e));
     }
 
     isHit(target) {
