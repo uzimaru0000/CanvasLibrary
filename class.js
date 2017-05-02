@@ -182,6 +182,11 @@ class Node extends EventTarget {
         return this.pos.clone().add(this.parent.globalPos);
     }
 
+    get globalRotation() {
+        if (this.parent instanceof Display) return this.rotation;
+        return this.rotate + this.parent.globalRotation;
+    }
+
     __draw(display) {
         this.dispatchEvent('update', display.frameCount);
         this._child.sort((x, y) => x.z_index > y.z_index);
@@ -289,7 +294,17 @@ class Drowable extends Node {
     }
 
     isHit(target) {
-
+        let f = (x, y) => {
+            let a = Math.tan(this.globalRotation);
+            return (x1) => a * x1 - ax + y;
+        };
+        let r = this.pos.clone().sub(new Vector(this.pos.x - this.width / 2, this.pos.y - this.height / 2)).length;
+        let s = n => Math.PI / 2 + Math.PI * n + this.globalRotation;
+        for (let i = 0; i < 4; i++) {
+            let p = new Vector(Math.cos(s(i), Math.sin(i))).mul(r).add(this.pos);
+            let p1 = new Vector(Math.cos(s(i + 1), Math.sin(i + 1))).mul(r).add(this.pos);
+            console.log(s(i) * 180 / Math.PI);
+        }
     }
 
     withIn(target, radius, callback) {
