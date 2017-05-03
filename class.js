@@ -293,34 +293,6 @@ class Drowable extends Node {
         return this._child.some(x => x.dispatchEvent(target, e));
     }
 
-    isHit(target) {
-        // 角度を取得
-        let s = n => Math.PI / 2 * n + this.globalRotation + Math.PI / 4;
-        // 中心からの距離
-        let r = this.pos.clone().sub(new Vector(this.pos.x - this.width / 2, this.pos.y - this.height / 2)).length;
-        // 辺の関数
-        let f = (p, flag) => {
-            let a = Math.tan(this.globalRotation);
-            a = flag ? a : -1/a;
-            return x => {
-                if (Math.abs(a) === Infinity) return p.y; 
-                else return a * x - a * p.x + p.y;
-            }
-        };
-
-        let flag = true;
-        for (let i = 0; i < 4; i++) {
-            let p0 = new Vector(Math.cos(s(i)), Math.sin(s(i))).mul(r).add(this.pos);
-            let p1 = new Vector(Math.cos(s(i + 1)), Math.sin(s(i + 1))).mul(r).add(this.pos);
-            let t = (p0.y - p1.y > 0 && p0.x - p1.x > 0) || (p0.y - p1.y < 0 && p0.x - p1.x < 0);
-            let max = Math.max(p0.x, p1.x), min = Math.min(p0.x, p1.x);
-            flag = (min >= target.x && max <= target.x && -Math.sign(p0.x - p1.x) * (f(p0, t)(target.pos.x) - target.pos.y) <= 0);
-            if (!flag) break;
-        }
-
-        return flag;
-    }
-
     withIn(target, radius, callback) {
         if (target instanceof Drowable && target.globalPos.sub(this.globalPos).length <= 2 * radius) {
             callback();
