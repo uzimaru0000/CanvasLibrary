@@ -467,7 +467,7 @@ class Vector {
         return Math.sqrt(Math.pow(this.x, 2) + Math.pow(this.y, 2));
     }
     get normalized() {
-        return this.mul(this.length);
+        return this.clone().div(this.length);
     }
 
     add(v) {
@@ -501,6 +501,11 @@ class Vector {
 
     dot(v) {
         return this.x * v.x + this.y * v.y;
+    }
+
+    cross(v) {
+        let angle = Math.acos(this.normalized.dot(v.normalized));
+        return this.length * v.length * Math.sin(angle);
     }
     
     static get up() { return new Vector(0, 1); }
