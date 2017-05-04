@@ -323,7 +323,7 @@ class Drowable extends Node {
             let v4 = w[(m+1) % w.length].clone().sub(w[m]);
             let v5 = v[n].clone().sub(w[m]);
             let v6 = v[(n+1) % v.length].clone().sub(w[m]);
-            return v1.cross(v2) * v1.cross(v3) <= 0 && v4.cross(v5) * v4.cross(v6) <= 0;
+            return v1.cross(v2) * v1.cross(v3) < 0 && v4.cross(v5) * v4.cross(v6) < 0;
         }));
     }
     
