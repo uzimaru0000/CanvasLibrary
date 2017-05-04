@@ -466,6 +466,7 @@ class Line extends Node {
     constructor(paths) {
         super();
         this.paths = paths.concat();
+        this.lineWidth = 1;
     }
 
     addPath(path) {
@@ -484,6 +485,7 @@ class Line extends Node {
         display._context.scale(this.scale.x, this.scale.y);
         display._context.beginPath();
         this.paths.forEach(p => display._context.lineTo(p.x, p.y));
+        display._context.lineWidth = this.lineWidth;
         display._context.stroke();
         display._context.closePath();
         this._child.forEach(x => x.__draw(display));
