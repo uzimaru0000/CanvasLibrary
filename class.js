@@ -316,13 +316,16 @@ class Drowable extends Node {
 
     isHit(target) {
         if (!(target instanceof Drowable)) return false;
-        let func = (_, n, v) => x => {
+        const func = (_, m, w) => (_, n, v) => {
             let v1 = v[(n+1) % v.length].clone().sub(v[n]);
-            let v2 = x.clone().sub(v[n]);
-            return v1.cross(v2) >= 0;
+            let v2 = w[m].clone().sub(v[n]);
+            let v3 = w[(m+1) % w.length].clone().sub(v[n]);
+            let v4 = w[(m+1) % w.length].clone().sub(w[m]);
+            let v5 = v[n].clone().sub(w[m]);
+            let v6 = v[(n+1) % v.length].clone().sub(w[m]);
+            return v1.cross(v2) * v1.cross(v3) <= 0 && v4.cross(v5) * v4.cross(v6) <= 0;
         };
-        return target.vertex.some(x => this.vertex.every((_, n, v) => func(_, n, v)(x))) ||
-               this.vertex.some(x => target.vertex.every((_, n, v) => func(_, n, v)(x)));
+        return target.vertex.some((_, n, v) => this.vertex.some(func(_, n, v)));
     }
     
 }
