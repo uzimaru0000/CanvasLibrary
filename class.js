@@ -260,6 +260,18 @@ class Drowable extends Node {
         this._canvas.height = value;
     }
 
+    get vertex() {
+        let angle = n => Math.PI / 4 * (2 * n + 1) + this.globalRotation;
+        let r = Math.sqrt(Math.pow(this.width, 2) + Math.pow(this.height, 2)) / 2;
+        let vert = [];
+        for (let i = 0; i < 4; i++) {
+            let a = angle(i);
+            let v = new Vector(Math.cos(a), Math.sin(a)).mul(r).add(this.globalPos);
+            vert.push(v);
+        }
+        return vert;
+    }
+
     __draw(display) {
         super.__draw(display);
         display._context.save();
@@ -301,6 +313,18 @@ class Drowable extends Node {
             return false;
         }
     }
+
+    isHit(target) {
+        if (!(target instanceof Drowable)) return false;
+        let func = (_, n, v) => x => {
+            let v1 = v[(n+1) % v.length].clone().sub(v[n]);
+            let v2 = x.clone().sub(v[n]);
+            return v1.cross(v2) >= 0;
+        };
+        return target.vertex.some(x => this.vertex.every((_, n, v) => func(_, n, v)(x))) ||
+               this.vertex.some(x => target.vertex.every((_, n, v) => func(_, n, v)(x)));
+    }
+    
 }
 
 // 矩形スプライトクラス
@@ -467,7 +491,7 @@ class Vector {
         return Math.sqrt(Math.pow(this.x, 2) + Math.pow(this.y, 2));
     }
     get normalized() {
-        return this.clone().div(this.length);
+        return this.length != 0 ? this.clone().div(this.length) : Vector.zero;
     }
 
     add(v) {
@@ -504,8 +528,7 @@ class Vector {
     }
 
     cross(v) {
-        let angle = Math.acos(this.normalized.dot(v.normalized));
-        return this.length * v.length * Math.sin(angle);
+        return this.x * v.y - this.y * v.x;
     }
     
     static get up() { return new Vector(0, 1); }
