@@ -215,7 +215,7 @@ class Node extends EventTarget {
 }
 
 class Group extends Node {
-    constructor(w, h) {
+    constructor() {
         super();
     }
 
@@ -459,6 +459,36 @@ class Label extends Drowable {
         this._context.fillStyle = this.color;
         this._context.fillText(this.text, 0, this.fontSize / 2);
         super.__draw(display);
+    }
+}
+
+class Line extends Node {
+    constructor(paths) {
+        super();
+        this.paths = paths.concat();
+    }
+
+    addPath(path) {
+        this.paths.push(path);
+    }
+
+    removePath(index) {
+        this.paths.splice(index, 1);
+    }
+
+    __draw(display) {
+        super.__draw(display);
+        display._context.save();
+        display._context.translate(this.pos.x, this.pos.y);
+        display._context.rotate(this.rotation);
+        display._context.scale(this.scale.x, this.scale.y);
+        display._context.beginPath();
+        this.paths.forEach(p => display._context.lineTo(p.x, p.y));
+        display._context.stroke();
+        display._context.closePath();
+        this._child.forEach(x => x.__draw(display));
+        display._context.setTransform(1, 0, 1, 0, 0, 0);
+        display._context.restore();
     }
 }
 
