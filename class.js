@@ -317,7 +317,6 @@ class Drowable extends Node {
         }
     }
 
-    // 正方形じゃないと使えないみたいです
     isHit(target) {
         if (!(target instanceof Drowable)) return false;
         return target.vertex.some((_, n, v) => this.vertex.some((_, m, w) => {
