@@ -261,13 +261,16 @@ class Drowable extends Node {
     }
 
     get vertex() {
-        let angle = n => Math.PI / 4 * (2 * n + 1) + this.globalRotation;
-        let r = Math.sqrt(Math.pow(this.width, 2) + Math.pow(this.height, 2)) / 2;
         let vert = [];
         for (let i = 0; i < 4; i++) {
-            let a = angle(i);
-            let v = new Vector(Math.cos(a), Math.sin(a)).mul(r).add(this.globalPos);
-            vert.push(v);
+            let v = new Vector(
+                this.width / 2 * Math.sign(Math.cos(Math.PI / 4 + Math.PI / 2 * i)),
+                this.height / 2 * Math.sign(Math.sin(Math.PI / 4 + Math.PI / 2 * i))
+            );
+            vert.push(new Vector(
+                Math.cos(this.globalRotation) * v.x - Math.sin(this.globalRotation) * v.y,
+                Math.sin(this.globalRotation) * v.x + Math.cos(this.globalRotation) * v.y,
+            ).add(this.globalPos));
         }
         return vert;
     }
