@@ -94,10 +94,10 @@ class Display extends EventTarget {
 
     __keyEvent(eventType, eventData) {
         this.dispatchEvent(eventData.type, eventData);
-        this.dispatchEvent(eventData.key + '-' + eventType, eventData);
+        this.dispatchEvent(eventData.code + '-' + eventType, eventData);
         this._child.forEach(x => {
             x.dispatchEvent(eventData.type, eventData);
-            x.dispatchEvent(eventData.key + '-' + eventType, eventData);
+            x.dispatchEvent(eventData.code + '-' + eventType, eventData);
         });
     }
 
