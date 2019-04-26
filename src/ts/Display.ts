@@ -1,13 +1,12 @@
-import { EventTarget } from "./EventTarget";
-import { MouseEvent } from "./Event";
+import { IEventTarget, Event } from "./EventTarget";
 import { Color } from "./Utils";
-import { Node } from "./Drawable";
+import { Node, Drawable } from "./Drawable";
 
 type Normal = { readonly type_: "normal" };
 const Normal: Normal = { type_: "normal" };
 
 type UseColor = { readonly type_: "use_color"; color: Color };
-const UseColor: (color: Color) => UseColor = color => ({
+export const UseColor: (color: Color) => UseColor = color => ({
   type_: "use_color",
   color
 });
@@ -15,111 +14,83 @@ const UseColor: (color: Color) => UseColor = color => ({
 export type ClearMode = Normal | UseColor;
 export type PreloadTexture = { image: HTMLImageElement };
 
-export class Display extends EventTarget<number> {
+export class Display implements IEventTarget {
   private canvas: HTMLCanvasElement;
   private context: CanvasRenderingContext2D;
-  private childlen: Array<Node<number>>;
-  private frameCount: number;
-  private textures: Array<PreloadTexture>;
-  private mainLoop: number;
+  private children: (Drawable & IEventTarget)[] = [];
+  private event: { [target: string]: ((e: Event) => void)[] } = {};
+  public clearMode: ClearMode = Normal;
 
-  public clearColor: string;
-  public clearMode: ClearMode;
-  public isDebug: boolean;
-
-  constructor(id: string) {
-    super();
+  constructor(id: string = "display") {
     this.canvas = document.getElementById(id) as HTMLCanvasElement;
     this.context = this.canvas.getContext("2d");
 
-    this.frameCount = 0;
-    this.childlen = [];
-    this.textures = [];
-    this.clearColor = "#fff";
-    this.clearMode = Normal;
-    this.isDebug = false;
-
-    this.mainLoop = requestAnimationFrame(this.draw.bind(this));
-
-    // キーイベント
-    document.addEventListener("keydown", e => this.keyEvent("down", e));
-    document.addEventListener("keyup", e => this.keyEvent("up", e));
-    document.addEventListener("keypress", e => this.keyEvent("press", e));
-    // マウスイベント
-    this.canvas.addEventListener("mousedown", e =>
-      this.__mouseEvent(new MouseEvent(e))
-    );
-    this.canvas.addEventListener("mouseup", e =>
-      this.__mouseEvent(new MouseEvent(e))
-    );
-    this.canvas.addEventListener("mousemove", e =>
-      this.__mouseEvent(new MouseEvent(e))
-    );
-    this.canvas.addEventListener("mouseout", e =>
-      this.__mouseEvent(new MouseEvent(e))
-    );
+    this.loop(Date.now());
   }
 
   get width() {
     return this.canvas.width;
   }
+
   get height() {
     return this.canvas.height;
   }
 
-  private draw() {
-    if (!this.textures.every(x => x.image.hasAttribute("loaded"))) return;
-    if (this.frameCount === 0) this.dispatchEvent("init", null);
-    this.clear();
-    this.dispatchEvent("update", this.frameCount);
-    this.childlen.sort((x, y) => x.z_index - y.z_index);
-    this.childlen.forEach(x => x.draw(this.context));
-    this.frameCount++;
+  addEventListener(target: string, func: (e: Event) => void) {
+    if (this.event[target] === undefined) {
+      this.event[target] = [];
+    }
+    this.event[target].push(func);
   }
 
-  private keyEvent(eventType, eventData) {
-    this.dispatchEvent(eventData.type, eventData);
-    this.dispatchEvent(eventData.code + "-" + eventType, eventData);
-    this.childlen.forEach(x => {
-      x.dispatchEvent(eventData.type, eventData);
-      x.dispatchEvent(eventData.code + "-" + eventType, eventData);
+  removeEventListener(target: string, func: (e: Event) => void) {
+    if (this.event[target] === undefined) return;
+    this.event[target].filter(x => x !== func);
+  }
+
+  dispatchEvent(target: string, event: Event) {
+    this.children
+      .filter(x => (x as IEventTarget).dispatchEvent !== undefined)
+      .map(x => x as IEventTarget)
+      .forEach(x => x.dispatchEvent(target, event));
+    if (this.event[target] === undefined) return;
+    this.event[target].forEach(func => func(event));
+  }
+
+  public addChild(child: Drawable & IEventTarget) {
+    this.children.push(child);
+  }
+
+  public removeChild(child: Drawable & IEventTarget) {
+    this.children = this.children.filter(c => c !== child);
+  }
+
+  private draw() {
+    this.children.forEach(c => c.draw(this.context));
+  }
+
+  private loop(ms: number) {
+    this.dispatchEvent("update", {
+      type: "update",
+      dt: (Date.now() - ms) * 1000
     });
+    this.clear();
+    this.draw();
+    requestAnimationFrame(this.loop.bind(this, Date.now()));
   }
 
   private clear() {
     switch (this.clearMode.type_) {
       case "normal":
-        this.context.clearRect(0, 0, this.width, this.height);
+        this.context.save();
+        this.context.fillStyle = new Color(255, 255, 255).toString();
         break;
       case "use_color":
+        this.context.save();
         this.context.fillStyle = this.clearMode.color.toString();
-        this.context.fillRect(0, 0, this.width, this.height);
         break;
     }
-  }
-
-  private mouseEvent(eventData) {
-    this.dispatchEvent(eventData.type, eventData);
-    this.childlen.sort((x, y) => x.z_index - y.z_index);
-    this.childlen.some(x => x.dispatchEvent(eventData.type, eventData));
-  }
-
-  addChild(child: Node<any>) {
-    this.childlen.push(child);
-    child.parent = this;
-  }
-  removeChild(child) {
-    var i = this._child.indexOf(child);
-    this._child.splice(i, 1);
-    child.parent = null;
-  }
-
-  preload(paths) {
-    let c = 0;
-    paths.forEach(x => (this._textures[x] = new Texture(x)));
-  }
-
-  getTexture(path) {
-    return this._textures[path];
+    this.context.fillRect(0, 0, this.width, this.height);
+    this.context.restore();
   }
 }

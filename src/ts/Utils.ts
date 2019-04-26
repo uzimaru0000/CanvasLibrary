@@ -33,42 +33,50 @@ export class Color {
 }
 
 export class Vector {
-  constructor(public x: number = 0, public y: number = 0) {}
+  constructor(
+    public x: number = 0,
+    public y: number = 0,
+    public z: number = 0
+  ) {}
 
   get length(): number {
-    return Math.sqrt(this.x * this.x + this.y * this.y);
+    return Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z);
   }
 
   get normalized(): Vector {
-    const n = new Vector(this.x, this.y);
+    const n = new Vector(this.x, this.y, this.z);
     return this.length !== 0 ? n.div(this.length) : n;
   }
 
   add(v: Vector) {
     this.x += v.x;
     this.y += v.y;
+    this.z += v.z;
     return this;
   }
 
   sub(v: Vector) {
     this.x -= v.x;
     this.y -= v.y;
+    this.z -= v.z;
     return this;
   }
   mul(s: number) {
     this.x *= s;
     this.y *= s;
+    this.z *= s;
     return this;
   }
   div(s: number) {
     if (s === 0) throw new Error("Don't divide to zero");
     this.x /= s;
     this.y /= s;
+    this.z /= s;
     return this;
   }
 
   dot(v: Vector) {
-    return this.x * v.x + this.y * v.y;
+    return this.x * v.x + this.y * v.y + this.z * v.z;
   }
 
   cross(v: Vector) {
@@ -76,19 +84,25 @@ export class Vector {
   }
 
   static get up() {
-    return new Vector(0, 1);
+    return new Vector(0, 1, 0);
   }
   static get down() {
-    return new Vector(0, -1);
+    return new Vector(0, -1, 0);
   }
   static get left() {
-    return new Vector(-1, 0);
+    return new Vector(-1, 0, 0);
   }
   static get right() {
-    return new Vector(1, 0);
+    return new Vector(1, 0, 0);
+  }
+  static get forward() {
+    return new Vector(0, 0, 1);
+  }
+  static get back() {
+    return new Vector(0, 0, -1);
   }
   static get one() {
-    return new Vector(1, 1);
+    return new Vector(1, 1, 1);
   }
   static get zero() {
     return new Vector();
